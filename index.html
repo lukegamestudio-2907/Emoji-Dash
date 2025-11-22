@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Emoji-Dash
-Made by Luke Linton, follow me on <a href="https://x.com/Dev_Luke79" target="_blank">X (Twitter)</a>  
-  for updates on coding, tech, and creativity!</title>
+<title>Emoji-Dash</title>
 <style>
 body { margin:0; overflow:hidden; font-family:Arial; }
 canvas { display:block; }
@@ -68,6 +66,8 @@ canvas { display:block; }
 <!-- Menu -->
 <div id="menu">
     <h1>Emoji-Dash</h1>
+  <h3>Made by Luke Linton, follow me on <a href="https://x.com/Dev_Luke79" target="_blank">X (Twitter)</a>  
+  for updates on coding, tech, and creativity!<h3>
     <div id="skins">Choose Skin:</div>
     <div id="backgrounds">Choose Background:</div>
     <button id="startBtn">Play</button>
@@ -92,7 +92,7 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 // PLAYER SKINS & BACKGROUNDS
-const playerSkins = ["😎","😁","🥳","😜","😏","🤖","🐱","😉"];
+const playerSkins = ["😎","😁","😜","😏","🤖","🐱","😉"];
 let selectedSkin = playerSkins[0];
 const backgrounds = [
     {name:"Night Sky", color:"#0a0f2d"},
@@ -255,6 +255,7 @@ document.getElementById("msg").addEventListener("click",()=>{ location.reload();
 </script>
 </body>
 </html>
+
 
 
 
