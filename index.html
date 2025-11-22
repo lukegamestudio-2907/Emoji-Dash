@@ -1,263 +1,315 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Emoji-Dash</title>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Emoji-Dash — Polished</title>
 <style>
-body { margin:0; overflow:hidden; font-family:Arial; }
-canvas { display:block; }
+  :root{
+    --glass: rgba(255,255,255,0.12);
+    --glass-strong: rgba(255,255,255,0.18);
+    --accent: #00f2ff;
+  }
+  body{ margin:0; overflow:hidden; font-family:Inter, Arial, sans-serif; background:linear-gradient(180deg,#05060a,#09102a); }
+  canvas{ display:block; }
 
-/* HUD with liquid-glass style */
-#hud {
-    position:absolute;
-    top:20px;
-    left:50%;
-    transform:translateX(-50%);
-    display:flex;
-    gap:40px;
-    align-items:center;
-}
-#hud div {
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    border-radius:15px;
-    padding:10px 20px;
-    color:white;
-    font-size:28px;
-    text-shadow:0 0 4px #000;
-}
+  /* Centered HUD */
+  #hud { position: absolute; top:18px; left:50%; transform:translateX(-50%); display:flex; gap:22px; align-items:center; z-index:12; }
+  .hud-card { backdrop-filter: blur(8px); background:var(--glass); border-radius:14px; padding:8px 14px; color:#fff; font-weight:600; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
+  #leaderboard { position:absolute; top:110px; right:18px; width:200px; background:var(--glass); backdrop-filter: blur(8px); padding:10px; border-radius:12px; color:#fff; font-size:13px; z-index:12; box-shadow:0 6px 18px rgba(0,0,0,0.6); }
+  #leaderboard h3{ margin:0 0 6px 0; font-size:14px; color:#fff; }
 
-/* Leaderboard */
-#Score Board {
-    position:absolute;
-    top:140px;
-    right:20px;
-    color:white;
-    font-size:20px;
-    text-align:right;
-    background: rgba(255,255,255,0.15);
-    backdrop-filter: blur(8px);
-    border-radius:12px;
-    padding:10px;
-}
+  /* Menu */
+  #menu{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; z-index:20; }
+  .menu-panel{ width:760px; max-width:94%; background:linear-gradient(135deg,#07102a, #1a0832); border-radius:18px; padding:26px; box-shadow:0 10px 40px rgba(0,0,0,0.6); text-align:center; color:#fff; }
+  .menu-title{ font-size:44px; margin:0 0 10px 0; text-shadow:0 6px 30px rgba(0,0,0,0.7); }
+  .menu-sub{ color:#ddd; margin-bottom:14px; }
 
-/* Messages */
-#msg { position:absolute; top:45%; width:100%; text-align:center; color:white; font-size:40px; display:none; cursor:pointer; text-shadow:0 0 6px #000; }
+  .controls-row{ display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:12px; }
+  .skin-btn, .bg-btn { background:var(--glass-strong); border-radius:12px; padding:8px 12px; font-size:18px; border:none; color:#fff; cursor:pointer; box-shadow:inset 0 -2px rgba(0,0,0,0.2); }
+  .skin-btn:hover, .bg-btn:hover{ transform:translateY(-4px); transition: transform .12s; }
+  .input-name{ padding:8px 12px; border-radius:10px; border:none; width:220px; text-align:center; font-size:16px; }
 
-/* Home Menu */
-#menu {
-    position:absolute; top:0; left:0; width:100%; height:100%;
-    background: linear-gradient(135deg,#0a0f2d,#220033);
-    display:flex; flex-direction:column; justify-content:center; align-items:center;
-}
-#menu h1 { color:white; font-size:64px; margin-bottom:20px; text-align:center; text-shadow:0 0 12px #ff0; }
-#menu button {
-    font-size:24px; padding:10px 24px; border-radius:20px; cursor:pointer; border:none;
-    margin:5px; background: rgba(255,255,255,0.2); color:white; backdrop-filter: blur(6px);
-    transition: transform 0.2s, background 0.2s;
-}
-#menu button:hover { transform:scale(1.1); background: rgba(255,255,255,0.35); }
+  .play-btn{ margin-top:6px; font-size:18px; padding:10px 26px; border-radius:999px; border:none; background:linear-gradient(90deg,#00f2ff,#6a00ff); color:#04060a; font-weight:700; cursor:pointer; box-shadow:0 10px 30px rgba(106,0,255,0.18); }
+  .play-btn:active{ transform:scale(.98); }
 
-/* Skin & Background selectors */
-#skins, #backgrounds { display:flex; flex-wrap:wrap; justify-content:center; margin-bottom:10px; gap:10px; }
+  /* small footer */
+  footer{ position:absolute; bottom:10px; width:100%; text-align:center; font-size:12px; color:#cfcfcf; z-index:11; }
+
+  /* Game over modal style */
+  #msg{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:28px; z-index:18; pointer-events:none; }
+  #msg.show{ pointer-events:auto; }
+
+  @media (max-width:520px){
+    .menu-panel{ padding:18px; }
+    .menu-title{ font-size:30px; }
+  }
 </style>
 </head>
 <body>
 
-<!-- Menu -->
+<!-- polished menu -->
 <div id="menu">
-    <h1>Emoji-Dash</h1>
-  <h3>Made by Luke Linton, follow me on <a href="https://x.com/Dev_Luke79" target="_blank">X (Twitter)</a>  
-  for updates on coding, tech, and creativity!<h3>
-    <div id="skins">Choose Skin:</div>
-    <div id="backgrounds">Choose Background:</div>
-    <button id="startBtn">Play</button>
+  <div class="menu-panel">
+    <div class="menu-title">Emoji-Dash</div>
+    <div class="menu-sub">Jump, dash and collect stars — emoji-only fun!</div>
+
+    <div style="margin-bottom:10px;">
+      <input id="playerName" class="input-name" placeholder="Enter player name (max 12)" maxlength="12">
+    </div>
+
+    <div style="margin-bottom:8px; font-weight:700;">Choose Skin</div>
+    <div class="controls-row" id="skins"></div>
+
+    <div style="margin-top:12px; margin-bottom:8px; font-weight:700;">Choose Background</div>
+    <div class="controls-row" id="backgrounds"></div>
+
+    <button id="startBtn" class="play-btn">Play — Start Emoji-Dash</button>
+    <div style="margin-top:8px; font-size:12px; color:#ddd;">Controls: SPACE = jump / double jump, SHIFT = dash, P = pause</div>
+  </div>
 </div>
 
 <!-- HUD -->
 <div id="hud">
-    <div id="score">Score: 0</div>
-    <div id="lives">Lives: 3</div>
-    <div id="level">Level: 1</div>
+  <div class="hud-card" id="score">Score: 0</div>
+  <div class="hud-card" id="lives">Lives: 3</div>
+  <div class="hud-card" id="level">Level: 1</div>
 </div>
 
-<div id="leaderboard">Leaderboard:<br></div>
-<div id="msg">Game Over! Click to Restart</div>
+<div id="leaderboard">
+  <h3>Leaderboard</h3>
+  <div id="lb-entries">No scores yet</div>
+  <div style="margin-top:8px; display:flex; gap:6px; justify-content:flex-end;">
+    <button id="resetLb" style="background:rgba(255,255,255,0.08); border:none; color:#fff; padding:6px 8px; border-radius:8px; cursor:pointer;">Reset</button>
+  </div>
+</div>
 
+<div id="msg" style="display:none"></div>
 <canvas id="game"></canvas>
+<footer>© 2025 Luke Linton — Emoji-Dash</footer>
 
 <script>
-const canvas = document.getElementById("game");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+/* ---------------------------------------------
+   Emoji-Dash — Polished single-file build (B)
+   - All features from version A
+   - Improved UI, Reset leaderboard, Play animations
+   - More robust leaderboard and spawn tuning
+   --------------------------------------------- */
 
-// PLAYER SKINS & BACKGROUNDS
-const playerSkins = ["😎","😁","😜","😏","🤖","🐱","😉"];
-let selectedSkin = playerSkins[0];
+const canvas = document.getElementById('game'), ctx = canvas.getContext('2d');
+function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+resize(); window.addEventListener('resize', resize);
+
+// skins & backgrounds
+const playerSkins = ["😎","😁","😇","🤩","🥳","😜","🤖","👻","🐱","😉"];
 const backgrounds = [
-    {name:"Night Sky", color:"#0a0f2d"},
-    {name:"Sunset", color:"#ff7e5f"},
-    {name:"Rainbow", color:"gradient"},
-    {name:"Deep Space", color:"#220033"},
-    {name:"Blue Sky", color:"#87ceeb"}
+  {name:"Night", color:"#071029"},
+  {name:"Sunset", color:"#ff7e5f"},
+  {name:"Rainbow", color:"gradient"},
+  {name:"Space", color:"#10002b"},
+  {name:"Blue Sky", color:"#87ceeb"}
 ];
+let selectedSkin = playerSkins[0];
 let selectedBackground = backgrounds[0];
 
-// MENU SETUP
-const skinDiv = document.getElementById("skins");
-playerSkins.forEach(skin=>{
-    const btn = document.createElement("button"); btn.innerText=skin; btn.onclick=()=>{selectedSkin=skin;};
-    skinDiv.appendChild(btn);
+// menu building
+const skinsContainer = document.getElementById('skins'), bgContainer = document.getElementById('backgrounds');
+playerSkins.forEach(s=>{
+  const b=document.createElement('button'); b.className='skin-btn'; b.innerText=s;
+  b.onclick=()=>{ selectedSkin=s; Array.from(skinsContainer.children).forEach(x=>x.style.opacity=''); b.style.opacity='0.8'; };
+  skinsContainer.appendChild(b);
 });
-const bgDiv = document.getElementById("backgrounds");
 backgrounds.forEach(bg=>{
-    const btn = document.createElement("button"); btn.innerText=bg.name; btn.onclick=()=>{selectedBackground=bg;};
-    bgDiv.appendChild(btn);
+  const b=document.createElement('button'); b.className='bg-btn'; b.innerText=bg.name;
+  b.onclick=()=>{ selectedBackground=bg; Array.from(bgContainer.children).forEach(x=>x.style.opacity=''); b.style.opacity='0.8'; };
+  bgContainer.appendChild(b);
 });
 
-// GAME VARIABLES
-let player={x:150, y:canvas.height-150, size:50, vy:0, gravity:1, jumpPower:-20, onGround:true, doubleJump:true, dash:false, dashSpeed:0, sprite:selectedSkin, trail:[]};
+// game variables
+let player={ x:150, y:0, size:56, vy:0, gravity:1.1, jumpPower:-22, onGround:true, doubleJump:true, dash:false, dashSpeed:0, sprite:selectedSkin, trail:[] };
+player.y = innerHeight - 150;
 let obstacles=[], stars=[], enemies=[], loops=[], particles=[];
-let gameSpeed=8, score=0, multiplier=1, gameOver=false, gameStarted=false, paused=false;
-let lives=3, currentLevel=1;
+let gameStarted=false, paused=false, gameOver=false;
+let gameSpeed=7.5, score=0, multiplier=1, lives=3, level=1;
+const scoreEl = document.getElementById('score'), livesEl = document.getElementById('lives'), levelEl = document.getElementById('level');
+const msgEl = document.getElementById('msg'), menuEl = document.getElementById('menu');
+const nameInput = document.getElementById('playerName'), startBtn = document.getElementById('startBtn');
+const lbEntries = document.getElementById('lb-entries'), resetLbBtn = document.getElementById('resetLb');
 
-// LOCALSTORAGE LEADERBOARD
-let leaderboard = JSON.parse(localStorage.getItem("smileyLeaderboard")) || [];
-function updateLeaderboardDisplay(){
-    let lbDiv = document.getElementById("leaderboard");
-    lbDiv.innerHTML="Leaderboard:<br>";
-    leaderboard.sort((a,b)=>b-a).slice(0,5).forEach((s,i)=>{ lbDiv.innerHTML += `${i+1}. ${s}<br>`; });
+let leaderboard = JSON.parse(localStorage.getItem('emojiDashLeaderboard')) || [];
+let currentPlayerName = '';
+
+function updateLeaderboardUI(){
+  if(!leaderboard.length){ lbEntries.innerHTML = 'No scores yet'; return; }
+  leaderboard.sort((a,b)=>b.score - a.score);
+  const top = leaderboard.slice(0,7);
+  lbEntries.innerHTML = top.map((e,i)=>`<div style="padding:4px 0">${i+1}. <b>${escapeHtml(e.name)}</b> — ${e.score}</div>`).join('');
 }
-updateLeaderboardDisplay();
+updateLeaderboardUI();
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// BACKGROUND STARS
-let bgStars=[], midStars=[], fgStars=[];
-for(let i=0;i<50;i++){ bgStars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:Math.random()*1.5+0.5, speed:0.2}); }
-for(let i=0;i<30;i++){ midStars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:Math.random()*2+1, speed:0.5}); }
-for(let i=0;i<20;i++){ fgStars.push({x:Math.random()*canvas.width, y:Math.random()*canvas.height, size:Math.random()*3+1, speed:1}); }
+// background layers
+let bg1 = createStars(48, 0.18), bg2 = createStars(30, 0.45), bg3 = createStars(18, 0.95);
+function createStars(n, speed){ const a=[]; for(let i=0;i<n;i++) a.push({ x:Math.random()*innerWidth, y:Math.random()*innerHeight, size:Math.random()*2+0.6, speed }); return a; }
 
-// HELPER FUNCTIONS
-function spawnObstacle(){ obstacles.push({x:canvas.width+50,y:canvas.height-130,size:50,sprite:"🌕"}); }
-function spawnStar(){ stars.push({x:canvas.width+50,y:canvas.height-200-Math.random()*150,size:40,sprite:"⭐"}); }
-function spawnEnemy(){ enemies.push({x:canvas.width+50,y:canvas.height-130,size:50,dir:Math.random()<0.5?1:-1,sprite:"😈"}); }
-function spawnLoop(){ loops.push({x:canvas.width+50,y:canvas.height-150,radius:40,color:randomColor()}); }
-function randomColor(){ const colors=["#0ff","#f0f","#ff0","#0f0","#f00","#0f8"]; return colors[Math.floor(Math.random()*colors.length)]; }
-function addParticle(x,y,color){ particles.push({x,y,vx:(Math.random()-0.5)*4,vy:(Math.random()-1.5)*4,size:Math.random()*6+2,color,life:30}); }
-function drawStars(array){ for(let s of array){ s.x -= s.speed; if(s.x<0) s.x=canvas.width; ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(s.x,s.y,s.size,0,Math.PI*2); ctx.fill(); } }
+// helper & spawn tuning
+function randomColor(){ const colors = ["#0ff","#f0f","#ff0","#0f0","#f00","#0f8"]; return colors[Math.floor(Math.random()*colors.length)]; }
+function addParticle(x,y,color){ particles.push({ x,y,vx:(Math.random()-0.5)*3,vy:(Math.random()-1.8)*3,size:Math.random()*5+1.5,color,life:26 }); }
+function spawnObstacle(){ obstacles.push({ x:canvas.width+70, y:canvas.height-130, size:56, sprite:"🌕" }); }
+function spawnStar(){ stars.push({ x:canvas.width+70, y:canvas.height-220-Math.random()*160, size:40, sprite:"⭐" }); }
+function spawnEnemy(){ enemies.push({ x:canvas.width+70, y:canvas.height-130, size:50, dir:Math.random()<0.5?1:-1, sprite:"😈" }); }
+function spawnLoop(){ loops.push({ x:canvas.width+70, y:canvas.height-150, radius:44, color:randomColor() }); }
 
-// LEVEL AND LIVES
-function nextLevel(){ currentLevel++; if(currentLevel>3){ endGame(true); return; } gameSpeed+=2; document.getElementById("level").innerText="Level: "+currentLevel; }
-function loseLife(){ lives--; document.getElementById("lives").innerText="Lives: "+lives; if(lives<=0) endGame(); }
+// collisions
+function rectCollision(a,b){ return (a.x < b.x + (b.size||b.width) && a.x + a.size > b.x && a.y + a.size > b.y && a.y < b.y + (b.size||b.height)); }
+function circleRect(c, r){ const cx=c.x, cy=c.y, cr=c.radius; const rx=r.x + r.size/2, ry=r.y + r.size/2; const dx=Math.abs(cx - rx), dy=Math.abs(cy - ry); if(dx > (r.size/2 + cr)) return false; if(dy > (r.size/2 + cr)) return false; if(dx <= r.size/2) return true; if(dy <= r.size/2) return true; const corner=(dx - r.size/2)*(dx - r.size/2) + (dy - r.size/2)*(dy - r.size/2); return corner <= cr*cr; }
 
-// UPDATE LOOP
+// main loop (polished)
 function update(){
-    if(!gameStarted || paused) return;
+  if(!gameStarted || paused) return;
+  // background
+  if(selectedBackground.color === 'gradient'){
+    const g = ctx.createLinearGradient(0,0,canvas.width,canvas.height); g.addColorStop(0,'#ff5f6d'); g.addColorStop(1,'#ffc371'); ctx.fillStyle = g;
+  } else { ctx.fillStyle = selectedBackground.color; }
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-    // Background
-    if(selectedBackground.color=="gradient"){
-        let grad = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
-        grad.addColorStop(0,"red"); grad.addColorStop(0.2,"orange"); grad.addColorStop(0.4,"yellow");
-        grad.addColorStop(0.6,"green"); grad.addColorStop(0.8,"blue"); grad.addColorStop(1,"violet");
-        ctx.fillStyle=grad;
-    } else { ctx.fillStyle=selectedBackground.color; }
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+  // parallax stars layers
+  drawStars(bg1); drawStars(bg2); drawStars(bg3);
 
-    drawStars(bgStars); drawStars(midStars); drawStars(fgStars);
+  // physics
+  player.dashSpeed = player.dash ? 16 : 0;
+  player.vy += player.gravity; player.y += player.vy;
+  if(player.y > canvas.height - 150){ player.y = canvas.height - 150; player.vy=0; player.onGround=true; player.doubleJump=true; }
 
-    player.dashSpeed=player.dash?15:0;
+  // dash trail (polished)
+  if(player.dash) player.trail.push({ x:player.x, y:player.y, life:14 });
+  for(const t of [...player.trail]){ ctx.globalAlpha = t.life/14; ctx.font = player.size+'px Arial'; ctx.fillText(player.sprite, t.x - 8, t.y); t.life--; }
+  player.trail = player.trail.filter(t=>t.life>0);
+  ctx.globalAlpha = 1;
 
-    // Player physics
-    player.vy += player.gravity;
-    player.y += player.vy;
-    if(player.y>canvas.height-150){player.y=canvas.height-150; player.vy=0; player.onGround=true; player.doubleJump=true;}
+  // draw player
+  ctx.font = player.size+'px Arial'; ctx.fillText(player.sprite, player.x, player.y);
 
-    // Dash trail
-    if(player.dash){ player.trail.push({x:player.x,y:player.y,life:10}); }
-    for(let t of player.trail){ ctx.font=player.size+"px Arial"; ctx.globalAlpha=t.life/10; ctx.fillText(player.sprite,t.x,t.y); t.life--; }
-    player.trail = player.trail.filter(t=>t.life>0);
-    ctx.globalAlpha=1;
+  // obstacles
+  for(const o of obstacles){ o.x -= (gameSpeed + player.dashSpeed); ctx.font = o.size+'px Arial'; ctx.fillText(o.sprite, o.x, o.y);
+    if(rectCollision(player, o)){ obstacles.splice(obstacles.indexOf(o),1); loseLife(); } }
+  obstacles = obstacles.filter(o=>o.x > -120);
 
-    ctx.font=player.size+"px Arial"; ctx.fillText(player.sprite,player.x,player.y);
+  // stars
+  for(const s of stars){ s.x -= (gameSpeed + player.dashSpeed); s.y += Math.sin(Date.now()/300 + s.x/70)*2; ctx.font = s.size+'px Arial'; ctx.fillText(s.sprite, s.x, s.y);
+    if(Math.random() < 0.04) addParticle(s.x, s.y, '#fff');
+    if(rectCollision(player, s)){ score += 10 * Math.round(multiplier); multiplier = 2; stars.splice(stars.indexOf(s),1); for(let i=0;i<6;i++) addParticle(s.x, s.y, '#ffd'); }
+  }
+  stars = stars.filter(s=>s.x > -120);
 
-    // Obstacles
-    for(let o of obstacles){ o.x -= gameSpeed+player.dashSpeed; ctx.font=o.size+"px Arial"; ctx.fillText(o.sprite,o.x,o.y); 
-        if(player.x<o.x+o.size && player.x+player.size>o.x && player.y+player.size>o.y && player.y<o.y+o.size){ 
-            obstacles.splice(obstacles.indexOf(o),1); loseLife(); } }
-    obstacles=obstacles.filter(o=>o.x>-100);
+  // enemies
+  for(const e of enemies){ e.x -= (gameSpeed + player.dashSpeed); e.x += e.dir * 2.1; e.y += Math.sin(Date.now()/280 + e.x/60)*1.6; if(Math.random() < 0.01) e.dir *= -1;
+    ctx.font = e.size+'px Arial'; ctx.fillText(e.sprite, e.x, e.y);
+    if(rectCollision(player, e)){ enemies.splice(enemies.indexOf(e),1); loseLife(); }
+  }
+  enemies = enemies.filter(e=>e.x > -120);
 
-    // Stars
-    for(let s of stars){ s.x -= gameSpeed+player.dashSpeed; s.y += Math.sin(Date.now()/200+s.x/50)*2; ctx.font=s.size+"px Arial"; ctx.fillText(s.sprite,s.x,s.y);
-        if(Math.random()<0.05) addParticle(s.x,s.y,"#fff");
-        if(player.x<s.x+s.size && player.x+player.size>s.x && player.y<s.y+s.size && player.y+player.size>s.y){ score+=10*multiplier; multiplier=2; stars.splice(stars.indexOf(s),1); for(let i=0;i<5;i++) addParticle(s.x,s.y,"#ff0"); } }
-    stars=stars.filter(s=>s.x>-100);
+  // loops
+  for(const l of loops){ l.x -= (gameSpeed + player.dashSpeed); ctx.beginPath(); ctx.strokeStyle = l.color; ctx.lineWidth = 5; ctx.arc(l.x, l.y, l.radius, 0, Math.PI*2); ctx.stroke();
+    if(circleRect(l, player)){ player.vy = player.jumpPower/1.6; addParticle(player.x, player.y, l.color); }
+  }
+  loops = loops.filter(l=>l.x > -120);
 
-    // Enemies
-    for(let e of enemies){ e.x -= gameSpeed+player.dashSpeed; e.x+=e.dir*2; e.y+=Math.sin(Date.now()/300 + e.x/50)*2; if(Math.random()<0.01) e.dir*=-1;
-        ctx.font=e.size+"px Arial"; ctx.fillText(e.sprite,e.x,e.y);
-        if(player.x<e.x+e.size && player.x+player.size>e.x && player.y+player.size>e.y && player.y<e.y+e.size){ enemies.splice(enemies.indexOf(e),1); loseLife(); } }
-    enemies=enemies.filter(e=>e.x>-100);
+  // particles
+  for(const p of particles){ p.x += p.vx; p.y += p.vy; p.life--; ctx.fillStyle = p.color; ctx.globalAlpha = Math.max(0, p.life/26); ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill(); }
+  particles = particles.filter(p=>p.life>0); ctx.globalAlpha = 1;
 
-    // Loops
-    for(let l of loops){ l.x-=gameSpeed+player.dashSpeed; ctx.beginPath(); ctx.strokeStyle=l.color; ctx.lineWidth=4; ctx.arc(l.x,l.y,l.radius,0,Math.PI*2); ctx.stroke();
-        if(player.x<l.x+l.radius && player.x+player.size>l.x-l.radius && player.y<l.y+l.radius && player.y+player.size>l.y-l.radius){ player.vy=player.jumpPower/2; addParticle(player.x,player.y,l.color); } }
-    loops=loops.filter(l=>l.x>-100);
+  // HUD
+  score++; scoreEl.innerText = 'Score: ' + score;
+  livesEl.innerText = 'Lives: ' + lives;
+  levelEl.innerText = 'Level: ' + level;
 
-    // Particles
-    for(let p of particles){ p.x+=p.vx; p.y+=p.vy; p.life--; ctx.fillStyle=p.color; ctx.globalAlpha=p.life/30; ctx.beginPath(); ctx.arc(p.x,p.y,p.size,0,Math.PI*2); ctx.fill(); }
-    particles=particles.filter(p=>p.life>0); ctx.globalAlpha=1;
+  if(multiplier > 1) multiplier -= 0.01;
+  gameSpeed += 0.0008;
 
-    score++; document.getElementById("score").innerText="Score: "+score;
-    if(multiplier>1) multiplier-=0.01;
-    gameSpeed+=0.001;
+  // level triggers
+  if(level === 1 && score >= 600) advanceLevel();
+  if(level === 2 && score >= 1400) advanceLevel();
 
-    // Level progression
-    if(currentLevel==1 && score>=500) nextLevel();
-    if(currentLevel==2 && score>=1000) nextLevel();
-
-    requestAnimationFrame(update);
+  requestAnimationFrame(update);
 }
 
-// END GAME
-function endGame(won=false){
-    gameOver=true;
-    document.getElementById("msg").innerText=won?"You Won! Click to Restart":"Game Over! Click to Restart";
-    document.getElementById("msg").style.display="block";
-    leaderboard.push(score);
-    localStorage.setItem("smileyLeaderboard",JSON.stringify(leaderboard));
-    updateLeaderboardDisplay();
-    stopSpawning();
+function drawStars(arr){ for(const s of arr){ s.x -= s.speed; if(s.x < -10) s.x = canvas.width + Math.random()*40; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y, s.size, 0, Math.PI*2); ctx.fill(); } }
+
+function advanceLevel(){ level++; if(level>3){ finishGame(true); return; } gameSpeed += 2.2; }
+
+// lose life
+function loseLife(){ lives--; if(lives <= 0) finishGame(); }
+
+// finish/end game
+function finishGame(won=false){
+  gameOver = true; msgEl.style.display = 'block'; msgEl.classList.add('show');
+  msgEl.innerHTML = won ? '<div>You Won! Click to Restart</div>' : '<div>Game Over! Click to Restart</div>';
+  leaderboard.push({ name: currentPlayerName || 'Player', score: score });
+  localStorage.setItem('emojiDashLeaderboard', JSON.stringify(leaderboard));
+  updateLeaderboardUI();
+  stopSpawns();
+}
+msgEl.addEventListener('click', ()=> location.reload());
+
+// spawns
+let spawnIntervals = [];
+function startSpawns(){
+  spawnIntervals.push(setInterval(spawnObstacle, 2100));
+  spawnIntervals.push(setInterval(spawnStar, 1700));
+  spawnIntervals.push(setInterval(spawnEnemy, 3200));
+  spawnIntervals.push(setInterval(spawnLoop, 5200));
+}
+function stopSpawns(){ spawnIntervals.forEach(i=>clearInterval(i)); spawnIntervals = []; }
+
+// keyboard
+document.addEventListener('keydown', e=>{
+  if(!gameStarted || paused) return;
+  if(e.code === 'Space'){
+    if(gameOver) { location.reload(); return; }
+    if(player.onGround){ player.vy = player.jumpPower; player.onGround = false; } else if(player.doubleJump){ player.vy = player.jumpPower; player.doubleJump = false; }
+    for(let i=0;i<6;i++) addParticle(player.x, player.y, '#0ff');
+  }
+  if(e.code === 'ShiftLeft') player.dash = true;
+  if(e.code === 'KeyP') paused = !paused;
+});
+document.addEventListener('keyup', e=>{ if(e.code === 'ShiftLeft') player.dash = false; });
+
+// start button
+startBtn.addEventListener('click', ()=>{
+  const name = (nameInput.value || '').trim();
+  if(!name){ alert('Please enter your name'); return; }
+  currentPlayerName = name.slice(0,12);
+  selectedSkin = selectedSkin;
+  player.sprite = selectedSkin;
+  menuEl.style.display = 'none';
+  gameStarted = true;
+  startSpawns();
+  update();
+});
+
+// leaderboard reset
+resetLbBtn.addEventListener('click', ()=>{
+  if(!confirm('Reset leaderboard? This will remove all saved scores.')) return;
+  leaderboard = []; localStorage.removeItem('emojiDashLeaderboard'); updateLeaderboardUI();
+});
+
+// initialize leaderboard UI
+function updateLeaderboardUI(){
+  if(!leaderboard.length){ lbEntries.innerHTML = '<i>No scores yet</i>'; return; }
+  leaderboard.sort((a,b)=>b.score - a.score);
+  lbEntries.innerHTML = leaderboard.slice(0,7).map((e,i)=>`<div style="padding:4px 0">${i+1}. <b>${escapeHtml(e.name)}</b> — ${e.score}</div>`).join('');
 }
 
-// SPAWN INTERVALS
-let spawnIntervals=[];
-function startSpawning(){ spawnIntervals.push(setInterval(spawnObstacle,2000)); spawnIntervals.push(setInterval(spawnStar,1500)); spawnIntervals.push(setInterval(spawnEnemy,3000)); spawnIntervals.push(setInterval(spawnLoop,5000)); }
-function stopSpawning(){ spawnIntervals.forEach(i=>clearInterval(i)); spawnIntervals=[]; }
+// load previous settings if exist
+function loadLocal(){ try{ const store = JSON.parse(localStorage.getItem('emojiDashSettings')||'{}'); }catch(e){} }
+loadLocal();
 
-// CONTROLS
-document.addEventListener("keydown",(e)=>{
-    if(!gameStarted || paused) return;
-    if(e.code==="Space"){ if(gameOver) location.reload();
-        if(player.onGround){ player.vy=player.jumpPower; player.onGround=false; } else if(player.doubleJump){ player.vy=player.jumpPower; player.doubleJump=false; }
-        for(let i=0;i<5;i++) addParticle(player.x,player.y,"#0ff");
-    }
-    if(e.code==="ShiftLeft") player.dash=true;
-    if(e.code==="KeyP") paused=!paused;
-});
-document.addEventListener("keyup",(e)=>{ if(e.code==="ShiftLeft") player.dash=false; });
-
-// HOME SCREEN
-document.getElementById("startBtn").addEventListener("click",()=>{
-    player.sprite = selectedSkin;
-    document.getElementById("menu").style.display="none";
-    gameStarted=true; startSpawning(); update();
-});
-document.getElementById("msg").addEventListener("click",()=>{ location.reload(); });
 </script>
 </body>
 </html>
-<footer style="position:absolute; bottom:5px; width:100%; text-align:center; color:white; font-size:12px;">
-  © 2025 Luke Linton. All rights reserved.
-</footer>
+
+
 
 
 
